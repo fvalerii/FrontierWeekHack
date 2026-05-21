@@ -57,7 +57,7 @@ All scenarios follow the same 5-challenge structure:
 
 <img width="4400" height="687" alt="banner" src="agentichacks.jpg" />
 
-Continue the journey in-person for a full day event where you can explore a more complex use cases. Find your stop on our [EMEA Agentic AI Hacks  – Microsoft Pulse](https://pulse.microsoft.com/en/build-ai-hacks-agentic-ai/).
+Take your Frontier Week momentum even further with a high-energy, in-person experience. Spend a full day exploring advanced use cases, hands-on builds, and expert-led sessions designed to turn ideas into real business impact. Find the event nearest you on [EMEA Agentic AI Hacks - Microsoft Pulse](https://pulse.microsoft.com/en/build-ai-hacks-agentic-ai/).
 
 ### Go deeper with the docs
 
