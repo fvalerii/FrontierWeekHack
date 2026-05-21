@@ -10,7 +10,6 @@ By the end of this challenge, you will have:
 - ✅ A **Fault Diagnosis Agent** that analyzes flagged anomalies and recommends maintenance actions
 - ✅ Both agents tested against real sensor data from the factory floor
 
-Time: ~30 minutes
 
 ## Context
 
