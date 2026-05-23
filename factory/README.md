@@ -2,6 +2,8 @@
 
 ## Background
 
+![scenario](./images/scenario.png)
+
 **TireForge Industries** operates a tire manufacturing plant with 5 critical machines:
 
 - **MX-001** (Mixer) — Blends raw rubber compounds
@@ -12,7 +14,11 @@
 
 Each machine emits real-time sensor data: temperature, pressure, vibration, and RPM.
 
+
+
 ## Your Mission
+
+![agentic-orchestration](./images/agentic-orchestration.png)
 
 Build an AI agent system that:
 
@@ -43,26 +49,8 @@ Build an AI agent system that:
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                   Microsoft Foundry                       │
-│                                                         │
-│  ┌─────────────────┐      ┌──────────────────────┐     │
-│  │ Anomaly Agent   │      │  Fault Diagnosis     │     │
-│  │ (+ tool:        │─────▶│  Agent               │     │
-│  │  check_thresh.) │      │                      │     │
-│  └────────┬────────┘      └──────────┬───────────┘     │
-│           │                          │                  │
-│           ▼                          ▼                  │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │         Factory Health Workflow                  │   │
-│  └─────────────────────────────────────────────────┘   │
-│                                                         │
-│  ┌──────────────┐  ┌───────────────┐  ┌────────────┐  │
-│  │ App Insights │  │  Evaluation   │  │  Tracing   │  │
-│  └──────────────┘  └───────────────┘  └────────────┘  │
-└─────────────────────────────────────────────────────────┘
-```
+![architecture](./images/architecture.png)
+
 
 ## Next Steps
 
