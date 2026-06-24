@@ -39,6 +39,13 @@ MODEL_DEPLOYMENT_NAME = os.getenv("MODEL_DEPLOYMENT_NAME", "gpt-5.4")
 CLAIMS_DATA_PATH = Path(__file__).resolve().parent / "claims_data.json"
 
 
+def _load_claim_batch() -> list[dict]:
+    """Load claim records to send as a batch payload in demo requests."""
+    with open(CLAIMS_DATA_PATH, "r") as f:
+        data = json.load(f)
+    return data.get("claims", [])
+
+
 # =============================================================================
 # Tool Function: assess_claim
 # This is already implemented — agents can call this to get claim risk analysis
@@ -306,10 +313,14 @@ def main():
     print(f"✅ Created: {triage_agent.agent.name} (version {triage_agent.agent.version})")
 
     print("\nAssessing all claims...")
+    claim_batch = _load_claim_batch()
+    claim_ids = [claim["claim_id"] for claim in claim_batch]
     triage_result = triage_agent.run(
-        "Assess all 5 claims (CLM-001, CLM-002, CLM-003, CLM-004, CLM-005) "
-        "and report which ones have flags. For each flag, state the "
-        "metric, its current value, the threshold it violates, and by how much."
+        "You are receiving a batch payload of claims that must be assessed in one run. "
+        "Use assess_claim for each claim_id in the payload and summarize all flags.\n\n"
+        f"BATCH_CLAIM_IDS: {json.dumps(claim_ids)}\n"
+        "BATCH_CLAIM_DATA:\n"
+        f"{json.dumps(claim_batch, indent=2)}"
     )
     print(triage_result)
 
@@ -320,13 +331,13 @@ def main():
     decision_agent.create()
     print(f"✅ Created: {decision_agent.agent.name} (version {decision_agent.agent.version})")
 
-    print("\nDeciding on critical claim CLM-001...")
+    print("\nDeciding on high-risk claim batch...")
+    high_risk_batch = [claim for claim in claim_batch if claim["status"] in {"critical", "warning"}]
     decision_result = decision_agent.run(
-        "Claim CLM-001 (auto collision, claimant Maria Torres) has these flags:\n"
-        "- Damage vs estimate match: 52% (min threshold: 70%) — 25.7% below min\n"
-        "- Fraud risk score: 82 (max threshold: 50) — 64.0% above max\n\n"
-        "The claim has full documentation (police report, photos, repair estimate, medical report).\n"
-        "Recommend an action and next steps."
+        "You are receiving a batch payload of high-risk claims. For each claim, provide: "
+        "recommended action, reasoning, next steps, and urgency.\n\n"
+        "HIGH_RISK_CLAIM_BATCH:\n"
+        f"{json.dumps(high_risk_batch, indent=2)}"
     )
     print(decision_result)
 

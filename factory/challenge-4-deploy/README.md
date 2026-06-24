@@ -85,7 +85,7 @@ TIREFORGE FACTORY HEALTH REPORT
 ### Step 3: Verify agents are deployed in the portal
 
 1. Open the [Microsoft Foundry portal](https://ai.azure.com/nextgen)
-2. Select your **tire-factory-project**
+2. Select your project
 3. Left sidebar → **Build** → **Agents**
 4. Confirm both agents appear:
    - `anomaly-detection-agent`
@@ -192,14 +192,26 @@ Re-run the script — Part B activates automatically:
 python deploy.py
 ```
 
-You will see each workflow step appear live in the terminal:
+You will see the workflow run submitted and polled live in the terminal:
 ```
-=== Invoking Portal Workflow: factory-health-workflow ===
-  --> Step: anomaly_scan
-      [completed] anomaly_scan
-  --> Step: fault_diagnosis
-      [completed] fault_diagnosis
-<final report streamed here>
+============================================================
+INVOKING WORKFLOW (BACKGROUND POLL)
+============================================================
+
+=== Portal Workflow: factory-health-workflow ===
+
+  Workflow steps:
+    1. anomaly-detection-agent  — detect sensor anomalies across all machines
+    2. fault-diagnosis-agent    — diagnose root cause for anomalous machines
+
+  Submitting workflow run (background)...
+  Response ID : resp_xxxxxxxx
+  Initial status: queued
+  [1] status=in_progress  tokens=0
+  [2] status=completed  tokens=1842
+
+Workflow output:
+<final consolidated report streamed here>
 ```
 
 ### Step 9: View run history and traces

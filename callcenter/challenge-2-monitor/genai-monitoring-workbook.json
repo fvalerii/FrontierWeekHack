@@ -1,0 +1,25 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Call Center GenAI Tracing Workbook\nCall-first monitoring across traces, requests, and dependencies."
+      },
+      "name": "text-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies | where timestamp > ago(24h) | extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend CallId = extract(@'(CALL-\\d{3})', 1, Payload), CustomerId = extract(@'(CUST-\\d{4})', 1, Payload), AgentName = extract(@'(intent-classification-agent|resolution-advisor-agent|tracing-test-agent)', 1, Payload) | where isnotempty(CallId) or isnotempty(AgentName) | summarize TraceCount = count(), Operations = dcount(operation_Id), LastSeen = max(timestamp) by CallId, CustomerId, AgentName | order by TraceCount desc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "name": "query-call-counts"
+    }
+  ],
+  "fromTemplateId": "CallCenterGenAITracingWorkbookV2",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

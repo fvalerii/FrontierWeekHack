@@ -72,13 +72,22 @@ def run_traced_agent_call():
         agent_name="tracing-test-agent",
         definition=PromptAgentDefinition(
             model=MODEL_DEPLOYMENT_NAME,
-            instructions="You are a factory monitoring assistant. Respond briefly.",
+            instructions=(
+                "You are a factory monitoring assistant for TireForge Industries. "
+                "Use the provided machine batch context and return a concise risk summary."
+            ),
         ),
     )
 
     conversation = openai_client.conversations.create()
     response = openai_client.responses.create(
-        input="What are the top 3 things to monitor in a curing press?",
+        input=(
+            "Process this machine telemetry batch and summarize anomalies by severity.\n"
+            "factory: TireForge Industries\n"
+            "floor: Production Line A\n"
+            "machines: MX-001 warning, EX-002 normal, CP-003 critical, CU-004 normal, IS-005 warning\n"
+            "tool_reference: check_thresholds"
+        ),
         conversation=conversation.id,
         extra_body={"agent_reference": {"name": agent.name, "type": "agent_reference"}},
     )

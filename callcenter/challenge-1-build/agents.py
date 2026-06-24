@@ -39,8 +39,16 @@ MODEL_DEPLOYMENT_NAME = os.getenv("MODEL_DEPLOYMENT_NAME", "gpt-5.4")
 CALL_DATA_PATH = Path(__file__).resolve().parent / "call_data.json"
 
 
+def _load_call_batch() -> list[dict]:
+    """Load call records to send as a batch payload in demo requests."""
+    with open(CALL_DATA_PATH, "r") as f:
+        data = json.load(f)
+    return data.get("calls", [])
+
+
 # =============================================================================
 # Tool Function: lookup_customer
+# This is already implemented — agents can call this to get customer context
 # =============================================================================
 
 def lookup_customer(call_id: str) -> str:
@@ -290,10 +298,14 @@ def main():
     print(f"✅ Created: {intent_agent.agent.name} (version {intent_agent.agent.version})")
 
     print("\nClassifying all incoming calls...")
+    call_batch = _load_call_batch()
+    call_ids = [call["call_id"] for call in call_batch]
     intent_result = intent_agent.run(
-        "Classify all 7 incoming calls (CALL-001 through CALL-007). "
-        "For each call, determine the primary intent, priority level, "
-        "customer sentiment, and retention risk."
+        "You are receiving a batch payload of calls for classification in one run. "
+        "Use lookup_customer for each call_id in the payload, then provide the classification output.\n\n"
+        f"BATCH_CALL_IDS: {json.dumps(call_ids)}\n"
+        "BATCH_CALL_DATA:\n"
+        f"{json.dumps(call_batch, indent=2)}"
     )
     print(intent_result)
 
@@ -304,16 +316,15 @@ def main():
     resolution_agent.create()
     print(f"✅ Created: {resolution_agent.agent.name} (version {resolution_agent.agent.version})")
 
-    print("\nAdvising on high-priority call: CALL-007 (security concern)...")
+    print("\nAdvising on high-priority batch of calls...")
+    high_priority_batch = [
+        call for call in call_batch if call["call_id"] in {"CALL-001", "CALL-006", "CALL-007"}
+    ]
     resolution_result = resolution_agent.run(
-        "Call CALL-007 from Emma Wilson (basic tier, 8 months tenure):\n"
-        "- Intent: security_concern\n"
-        "- Priority: critical\n"
-        "- Sentiment: anxious\n"
-        "- Retention risk: medium\n"
-        "- Context: Customer received SMS verification codes she didn't request. "
-        "Noticed an unfamiliar device on her account. Very worried about unauthorized access.\n\n"
-        "Recommend the resolution strategy, script, and immediate actions."
+        "You are receiving a batch payload of high-priority calls. For each call, provide: "
+        "recommended action, script suggestion, escalation decision, available offers, and follow-up steps.\n\n"
+        "HIGH_PRIORITY_CALL_BATCH:\n"
+        f"{json.dumps(high_priority_batch, indent=2)}"
     )
     print(resolution_result)
 

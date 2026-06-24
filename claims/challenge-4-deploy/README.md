@@ -98,24 +98,31 @@ CLAIMSIGHT INSURANCE — CLAIMS PROCESSING REPORT
    ```
    Assess CLM-001 and CLM-003. What flags do you find?
    ```
-3. The agent will call `assess_claim` for each claim and return a triage report
+3. Watch the `assess_claim` tool call fire for each claim
+4. Also try:
+   ```
+   Assess all claims: CLM-001, CLM-002, CLM-003, CLM-004, CLM-005. Report every metric out of spec.
+   ```
 
 ### Step 5: Test the Claims Decision Agent
 
-1. Click **claims-decision-agent** → **Playground**
+1. Left sidebar → **Agents** → **claims-decision-agent** → **Playground**
 2. Send:
    ```
    CLM-001 is flagged: fraud_risk_score 82 (above max 50), damage_vs_estimate_match 52% (below min 70%). Recommend an action.
    ```
-3. The agent should recommend denial or escalation with justification
+3. Expected structure: **RECOMMENDED ACTION** / **REASONING** / **NEXT STEPS** / **URGENCY**
 
 ### Step 6: Build the workflow in the portal designer
 
-1. Left sidebar → **Build** → **Workflows** → **New workflow**
-2. Add two steps:
-   - Step 1: `claims-triage-agent` — "Assess all claims and report flags"
-   - Step 2: `claims-decision-agent` — "For each flagged claim, recommend an action"
-3. Deploy the workflow and note the agent name
+1. Left sidebar → **Build** → **Workflows** → **+ New workflow**
+2. In the visual designer:
+   - **+ Add step** → Agent → `claims-triage-agent`
+     - Input: `Assess all claims and report any flags for completeness or fraud indicators.`
+   - **+ Add step** → Agent → `claims-decision-agent`
+     - Wire the output of the first step as input to this step
+3. Name it `claims-processing-workflow`
+4. Click **Save** then **Deploy**
 
 ### Step 7: Test the workflow in the portal playground
 
@@ -176,20 +183,36 @@ CLAIMSIGHT INSURANCE — CLAIMS PROCESSING REPORT
 
 ### Step 8: Invoke the portal workflow from Python (streaming)
 
-Set `WORKFLOW_AGENT_NAME=claims-processing-workflow` in `.env`, then re-run:
+Add to your `.env`:
+```
+WORKFLOW_AGENT_NAME=claims-processing-workflow
+```
 
+Re-run the script — Part B activates automatically:
 ```bash
 python deploy.py
 ```
 
-The script will stream `workflow_action` events as the workflow executes each step:
-
+You will see the workflow run submitted and polled live in the terminal:
 ```
-[workflow] Starting step: claims-triage-agent
-[workflow] Completed step: claims-triage-agent
-[workflow] Starting step: claims-decision-agent
-[workflow] Completed step: claims-decision-agent
-<final report streamed here>
+============================================================
+INVOKING WORKFLOW (BACKGROUND POLL)
+============================================================
+
+=== Portal Workflow: claims-processing-workflow ===
+
+  Workflow steps:
+    1. claims-triage-agent    — triage claims for completeness and fraud indicators
+    2. claims-decision-agent  — make approval/denial decisions for triaged claims
+
+  Submitting workflow run (background)...
+  Response ID : resp_xxxxxxxx
+  Initial status: queued
+  [1] status=in_progress  tokens=0
+  [2] status=completed  tokens=1842
+
+Workflow output:
+<final consolidated report streamed here>
 ```
 
 ### Step 9: View run history and traces

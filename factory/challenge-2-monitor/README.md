@@ -67,42 +67,41 @@ cd factory/challenge-2-monitor
 python monitor.py
 ```
 
-Once the script finishes, your traces are live. Use either portal to explore them.
+Once the script finishes, your traces are live. Explore them in the Azure Portal.
 
 ---
 
-### Option A: Microsoft Foundry Portal
-
-1. Go to [foundry.microsoft.com](https://ai.azure.com/nextgen) → open your project
-2. Left sidebar → **Tracing**
-3. You’ll see a list of recent traces — click any row to open it
-4. Inside a trace you can see:
-   - Each **agent turn** as a span (input → output)
-   - **Tool calls** (`check_thresholds`, etc.) as child spans with inputs/outputs
-   - **Token usage** and **latency** per span
-   - The full model prompt and completion if `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`
-5. Use the **timeline view** to spot slow spans, and the **details panel** to inspect individual messages
-
----
-
-### Option B: Azure Portal — Application Insights
+### Azure Portal — Application Insights
 
 1. Go to [portal.azure.com](https://portal.azure.com) → search for **Application Insights** → open `foundry-hack-insights-<suffix>`
-2. Left sidebar → **Investigate** → **Transaction search**
-3. Set the time range to **Last 30 minutes** and click **Search** — you’ll see individual trace events
-4. For a richer view: left sidebar → **Investigate** → **Performance**
-   - Shows operation durations, percentiles, and outliers
-5. For end-to-end traces: click any operation → **Drill into** → **End-to-end transaction details**
-   - This renders the full Gantt chart of spans for a single agent run
-6. To write custom queries: left sidebar → **Monitoring** → **Logs**
-   - Try this starter query to see all GenAI traces:
-   ```kusto
-   traces
-   | where timestamp > ago(1h)
-   | where message contains "gen_ai"
-   | project timestamp, message, severityLevel, customDimensions
-   | order by timestamp desc
-   ```
+2. Left sidebar → **Investigate** → **Search**
+
+![Application Insights Search](./images/screen21.png)
+
+3. Set the time range to **Last 30 minutes** and click **Search** — you'll see individual trace events
+4. Look for traces where your agents were invoked.
+   You can inspect the timestamp, operation ID, and message payload to confirm calls reached the model.
+5. Click on `Fault Diagnosis Agent` instance.
+You will see the **end-to-end transaction trace** showing:
+   - The full agent conversation (user input with sensor anomalies → agent response with diagnosis)
+   - Nested spans for each model call with latency breakdowns (e.g., `gpt-5.4-2026-03-05` taking 5.1 seconds)
+   - The exact system prompt and generated reasoning the agent used to reach its conclusion
+   - Resource details (AKS cluster, region) where the agent executed
+   - Any content filtering blockers that violated default Responsible AI standards
+   - This view lets you inspect exactly what the agent "saw" and "reasoned" to understand any misclassifications or performance issues
+6. Open the included **App Insights Workbook** for a machine-first operations view:
+   1. In Application Insights, go to **Workbooks** → **+ New** → **Advanced Editor**.
+   2. Open [genai-monitoring-workbook.json](genai-monitoring-workbook.json) and copy its JSON.
+   3. Paste into the Advanced Editor, then click **Apply** and **Done Editing**.
+   4. Save it as **Factory GenAI Tracing Workbook**.
+   5. Use this workbook to track:
+      - Agent-level KPIs (invocations, latency, token usage, error count)
+      - Traces per machine (`MX-001`, `EX-002`, `CP-003`, `CU-004`, `IS-005`)
+      - Machine-by-severity distribution (critical/warning/normal)
+      - Business context extraction (`TireForge Industries`, `Production Line A`)
+      - Tool call health for `check_thresholds`
+
+   If the workbook says **"The query returned no results"**, run `python monitor.py` again and refresh the workbook after 1-2 minutes. The workbook queries depend on recent traces that include machine IDs (`MX-001`, `CP-003`, etc.) and business context fields.
 
 ---
 

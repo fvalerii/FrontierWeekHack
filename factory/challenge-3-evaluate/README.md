@@ -7,7 +7,7 @@ Time: ~30 minutes
 By the end of this challenge, you will have:
 
 - ✅ Run a systematic evaluation of your agents against a test dataset
-- ✅ Used built-in evaluators (task adherence, coherence) to measure quality
+- ✅ Used built-in evaluators (coherence, relevance) to measure quality
 - ✅ Interpreted evaluation metrics and identified areas for improvement
 - ✅ Understanding of how to integrate evaluations into a CI/CD pipeline
 
@@ -70,16 +70,13 @@ The evaluation dataset has already been prepared for you as [eval_portal.jsonl](
 
 3. Select **Agent** as the evaluation target
 4. Choose `anomaly-detection-agent` from the dropdown
-5. Select **Existing Dataset**
-6. Upload `factory/challenge-3-evaluate/eval_portal.jsonl`
-7. Map the `query` column to the agent input field → **Next** and leave **gpt-5.4** as the Judge model
+5. Select **Individual Turns** and then **Existing Dataset**
+6. Click on **Upload new dataset** and add the file located on `factory/challenge-3-evaluate/eval_portal.jsonl`
+7. Leave the **Field Mapping**, **Configure Agents** and **Criteria** fields as is.
+8. Leave the Evaluation Name as is or configure to your liking.
+9. Send your Evaluation. This will take some time to run. 
 
-### Step 3: Choose evaluators
-
-8. Enable **Coherence** and **Relevance** → **Next**
-9. Click **Submit**
-
-### Step 4: View results
+### Step 3: View results
 
 Results appear in the **Evaluate** tab within a few minutes. Click the run name to see per-row scores and the aggregate metric summary.
 
@@ -88,6 +85,6 @@ Results appear in the **Evaluate** tab within a few minutes. Click the run name 
 ## Success Criteria
 
 - [ ] Evaluation runs against all 10 test cases without errors
-- [ ] You can see per-row scores for task adherence and coherence
+- [ ] You can see per-row scores for coherence and relevance
 - [ ] You've identified at least one case where the agent could improve
 - [ ] You understand the difference between aggregate metrics and per-row analysis

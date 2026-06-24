@@ -1,0 +1,119 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Factory GenAI Tracing Workbook\nMachine-first monitoring for TireForge agents across traces, requests, and dependencies."
+      },
+      "name": "text-header"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Agent Performance (Last 24h)"
+      },
+      "name": "text-agent"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies\n| where timestamp > ago(24h)\n| extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions))\n| extend AgentName = extract(@'(anomaly-detection-agent|fault-diagnosis-agent|tracing-test-agent)', 1, Payload)\n| where isnotempty(AgentName)\n| extend DurationMs = coalesce(todouble(duration), todouble(customDimensions.duration_ms)), PromptTokens = coalesce(todouble(customDimensions['gen_ai.usage.input_tokens']), todouble(customDimensions['gen_ai.usage.prompt_tokens']), todouble(customDimensions.gen_ai_prompt_token_count)), CompletionTokens = coalesce(todouble(customDimensions['gen_ai.usage.output_tokens']), todouble(customDimensions['gen_ai.usage.completion_tokens']), todouble(customDimensions.gen_ai_completion_token_count)), Status = coalesce(tostring(success), tostring(customDimensions.otel_status_code))\n| summarize Invocations = dcount(operation_Id), AvgLatencyMs = round(avg(DurationMs), 2), P95LatencyMs = round(percentile(DurationMs, 95), 2), TotalPromptTokens = sum(PromptTokens), TotalCompletionTokens = sum(CompletionTokens), Errors = countif(Status has 'false' or Status has 'ERROR') by AgentName\n| order by Invocations desc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "name": "query-agent-kpis"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies\n| where timestamp > ago(24h)\n| extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions))\n| extend AgentName = extract(@'(anomaly-detection-agent|fault-diagnosis-agent|tracing-test-agent)', 1, Payload)\n| where isnotempty(AgentName)\n| extend DurationMs = coalesce(todouble(duration), todouble(customDimensions.duration_ms))\n| summarize AvgLatencyMs = round(avg(DurationMs), 2), P95LatencyMs = round(percentile(DurationMs, 95), 2) by bin(timestamp, 5m), AgentName\n| render timechart",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "timechart"
+      },
+      "name": "query-latency-trend"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Traces Per Machine (Last 24h)"
+      },
+      "name": "text-machine"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies\n| where timestamp > ago(24h)\n| extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions))\n| extend MachineId = extract(@'(MX-\\d{3}|EX-\\d{3}|CP-\\d{3}|CU-\\d{3}|IS-\\d{3})', 1, Payload)\n| where isnotempty(MachineId)\n| summarize TraceCount = count(), Operations = dcount(operation_Id), LastSeen = max(timestamp) by MachineId\n| order by TraceCount desc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "name": "query-machine-counts"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies\n| where timestamp > ago(24h)\n| extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions))\n| extend MachineId = extract(@'(MX-\\d{3}|EX-\\d{3}|CP-\\d{3}|CU-\\d{3}|IS-\\d{3})', 1, Payload)\n| where isnotempty(MachineId)\n| extend Severity = case(Payload has 'critical', 'critical', Payload has 'warning', 'warning', Payload has 'normal', 'normal', 'unknown')\n| summarize TraceCount = count() by MachineId, Severity\n| render barchart",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart"
+      },
+      "name": "query-machine-severity"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Business and Tool Signals (Last 24h)"
+      },
+      "name": "text-business"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies\n| where timestamp > ago(24h)\n| extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions))\n| extend Business = extract(@'(TireForge Industries)', 1, Payload), Floor = extract(@'(Production Line A)', 1, Payload)\n| where isnotempty(Business) or isnotempty(Floor)\n| summarize TraceCount = count(), Operations = dcount(operation_Id) by Business, Floor\n| order by TraceCount desc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "name": "query-business-context"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies\n| where timestamp > ago(24h)\n| extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions))\n| where Payload has 'check_thresholds'\n| extend Status = coalesce(tostring(success), tostring(customDimensions.otel_status_code)), DurationMs = coalesce(todouble(duration), todouble(customDimensions.duration_ms))\n| summarize Invocations = count(), AvgLatencyMs = round(avg(DurationMs), 2), P95LatencyMs = round(percentile(DurationMs, 95), 2), Errors = countif(Status has 'false' or Status has 'ERROR') by ToolName = 'check_thresholds'",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "name": "query-tool-health"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Recent End-to-End Trace Rows (Last 24h)"
+      },
+      "name": "text-recent"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true withsource=SourceTable traces, requests, dependencies\n| where timestamp > ago(24h)\n| extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions))\n| extend AgentName = extract(@'(anomaly-detection-agent|fault-diagnosis-agent|tracing-test-agent)', 1, Payload), MachineId = extract(@'(MX-\\d{3}|EX-\\d{3}|CP-\\d{3}|CU-\\d{3}|IS-\\d{3})', 1, Payload), Status = coalesce(tostring(success), tostring(customDimensions.otel_status_code)), DurationMs = coalesce(todouble(duration), todouble(customDimensions.duration_ms)), Tokens = coalesce(todouble(customDimensions['gen_ai.usage.input_tokens']), todouble(customDimensions.gen_ai_prompt_token_count)) + coalesce(todouble(customDimensions['gen_ai.usage.output_tokens']), todouble(customDimensions.gen_ai_completion_token_count))\n| where isnotempty(AgentName) or isnotempty(MachineId)\n| project Timestamp = timestamp, SourceTable, operation_Id, AgentName, MachineId, Status, DurationMs, Tokens, Message = substring(Payload, 0, 180)\n| order by Timestamp desc\n| take 100",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "name": "query-recent-traces"
+    }
+  ],
+  "fromTemplateId": "FactoryGenAITracingWorkbookV3",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

@@ -72,13 +72,23 @@ def run_traced_agent_call():
         agent_name="tracing-test-agent",
         definition=PromptAgentDefinition(
             model=MODEL_DEPLOYMENT_NAME,
-            instructions="You are a call center operations assistant. Respond briefly.",
+            instructions=(
+                "You are a call center operations assistant for NovaTel Communications. "
+                "Summarize intents, priorities, and escalation recommendations for batch calls."
+            ),
         ),
     )
 
     conversation = openai_client.conversations.create()
     response = openai_client.responses.create(
-        input="What are the top 3 KPIs to monitor in a call center?",
+        input=(
+            "Classify this call batch and provide queue priorities.\n"
+            "company: NovaTel Communications\n"
+            "department: Customer Support\n"
+            "calls: CALL-001 CUST-4421 billing_dispute high, CALL-006 CUST-6645 billing_dispute critical, "
+            "CALL-007 CUST-3398 security_concern critical\n"
+            "tool_reference: lookup_customer"
+        ),
         conversation=conversation.id,
         extra_body={"agent_reference": {"name": agent.name, "type": "agent_reference"}},
     )

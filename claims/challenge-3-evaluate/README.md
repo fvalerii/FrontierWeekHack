@@ -47,13 +47,13 @@ The dataset lives at [challenge-4-deploy/evaluation_dataset.json](../challenge-4
 
 ## About the Evaluators
 
-Microsoft Foundry uses an **LLM-as-judge** approach — a separate model reads each agent response alongside the input and ground truth, then scores it on a 1–5 scale. You’ll use two built-in evaluators:
+Microsoft Foundry uses an **LLM-as-judge** approach — a separate model reads each agent response alongside the input and ground truth, then scores it on a 1–5 scale. You'll use two built-in evaluators:
 
-- **Coherence** — measures whether the agent’s response is logically structured and internally consistent. A score of 5 means the output is clear, well-organised, and flows naturally. A low score means the response is contradictory, jumbled, or hard to follow. For a claims agent this catches things like recommending approval while simultaneously flagging a high fraud risk score.
+- **Coherence** — measures whether the agent's response is logically structured and internally consistent. A score of 5 means the output is clear, well-organised, and flows naturally. A low score means the response is contradictory, jumbled, or hard to follow. For a claims agent this catches things like recommending approval while simultaneously flagging a high fraud risk score.
 
-- **Relevance** — measures whether the response actually addresses what was asked. A score of 5 means the agent correctly assessed the claim’s completeness, fraud indicators, and coverage match, then gave a pertinent action. A low score means the agent ignored key data points in the claim or gave a generic recommendation that doesn’t fit the scenario.
+- **Relevance** — measures whether the response actually addresses what was asked. A score of 5 means the agent correctly assessed the claim's completeness, fraud indicators, and coverage match, then gave a pertinent action. A low score means the agent ignored key data points in the claim or gave a generic recommendation that doesn't fit the scenario.
 
-These two scores together give you a quick signal on output quality. When you see a low coherence score, look at the agent’s system prompt structure. When you see a low relevance score, look at how the agent weighs the fraud risk score and document completeness in its reasoning.
+These two scores together give you a quick signal on output quality. When you see a low coherence score, look at the agent's system prompt structure. When you see a low relevance score, look at how the agent weighs the fraud risk score and document completeness in its reasoning.
 
 ## Get Started
 
@@ -70,16 +70,13 @@ The evaluation dataset has already been prepared for you as [eval_portal.jsonl](
 
 3. Select **Agent** as the evaluation target
 4. Choose `claims-triage-agent` from the dropdown
-5. Select **Existing Dataset**
-6. Upload `claims/challenge-3-evaluate/eval_portal.jsonl`
-7. Map the `query` column to the agent input field → **Next** and leave **gpt-5.4** as the Judge model
+5. Select **Individual Turns** and then **Existing Dataset**
+6. Click on **Upload new dataset** and add the file located on `claims/challenge-3-evaluate/eval_portal.jsonl`
+7. Leave the **Field Mapping**, **Configure Agents** and **Criteria** fields as is.
+8. Leave the Evaluation Name as is or configure to your liking.
+9. Send your Evaluation. This will take some time to run. 
 
-### Step 3: Choose evaluators
-
-8. Enable **Coherence** and **Relevance** → **Next**
-9. Click **Submit**
-
-### Step 4: View results
+### Step 3: View results
 
 Results appear in the **Evaluate** tab within a few minutes. Click the run name to see per-row scores and the aggregate metric summary.
 

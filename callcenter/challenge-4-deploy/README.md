@@ -124,13 +124,13 @@ NOVATEL CALL CENTER — SHIFT REPORT
 
 ### Step 6: Build the workflow in the portal designer
 
-1. Left sidebar → **Build** → **Agents** → **Workflows** → **Create** → **Sequential**
+1. Left sidebar → **Build** → **Workflows** → **+ New workflow**
 2. In the visual designer:
    - **+ Add step** → Agent → `intent-classification-agent`
      - Input: `Classify all incoming calls and identify any critical or high-priority items.`
    - **+ Add step** → Agent → `resolution-advisor-agent`
      - Wire the output of the first step as input to this step
-3. Name it `call-center-triage-workflow`
+3. Name it `callcenter-triage-workflow`
 4. Click **Save** then **Deploy**
 
 ### Step 7: Test the workflow in the portal playground
@@ -181,7 +181,7 @@ NOVATEL CALL CENTER — SHIFT REPORT
 
 Add to your `.env`:
 ```
-WORKFLOW_AGENT_NAME=call-center-triage-workflow
+WORKFLOW_AGENT_NAME=callcenter-triage-workflow
 ```
 
 Re-run the script — Part B activates automatically:
@@ -189,14 +189,26 @@ Re-run the script — Part B activates automatically:
 python deploy.py
 ```
 
-You will see each workflow step appear live in the terminal:
+You will see the workflow run submitted and polled live in the terminal:
 ```
-=== Invoking Portal Workflow: call-center-triage-workflow ===
-  --> Step: intent_classification
-      [completed] intent_classification
-  --> Step: resolution_advisory
-      [completed] resolution_advisory
-<final report streamed here>
+============================================================
+INVOKING WORKFLOW (BACKGROUND POLL)
+============================================================
+
+=== Portal Workflow: callcenter-triage-workflow ===
+
+  Workflow steps:
+    1. intent-classification-agent  — classify all calls by intent, priority, sentiment
+    2. resolution-advisor-agent     — recommend resolution for high-priority calls
+
+  Submitting workflow run (background)...
+  Response ID : resp_xxxxxxxx
+  Initial status: queued
+  [1] status=in_progress  tokens=0
+  [2] status=completed  tokens=1842
+
+Workflow output:
+<final consolidated report streamed here>
 ```
 
 ### Step 9: View run history and traces

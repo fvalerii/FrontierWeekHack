@@ -1,0 +1,25 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Claims GenAI Tracing Workbook\nClaim-first monitoring across traces, requests, and dependencies."
+      },
+      "name": "text-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union isfuzzy=true traces, requests, dependencies | where timestamp > ago(24h) | extend Payload = strcat(tostring(message), ' ', tostring(name), ' ', tostring(target), ' ', tostring(data), ' ', tostring(customDimensions)) | extend ClaimId = extract(@'(CLM-\\d{3})', 1, Payload), AgentName = extract(@'(claims-triage-agent|claims-decision-agent|tracing-test-agent)', 1, Payload), Decision = extract(@'(APPROVE|REQUEST DOCUMENTS|INVESTIGATE|DENY)', 1, Payload), Urgency = extract(@'(IMMEDIATE|WITHIN 48H|STANDARD)', 1, Payload) | where isnotempty(ClaimId) or isnotempty(AgentName) | summarize TraceCount = count(), Operations = dcount(operation_Id), LastSeen = max(timestamp) by ClaimId, AgentName, Decision, Urgency | order by TraceCount desc",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table"
+      },
+      "name": "query-claim-counts"
+    }
+  ],
+  "fromTemplateId": "ClaimsGenAITracingWorkbookV2",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

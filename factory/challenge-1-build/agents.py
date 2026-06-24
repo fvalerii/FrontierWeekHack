@@ -39,6 +39,13 @@ MODEL_DEPLOYMENT_NAME = os.getenv("MODEL_DEPLOYMENT_NAME", "gpt-5.4")
 SENSOR_DATA_PATH = Path(__file__).resolve().parent / "sensor_data.json"
 
 
+def _load_sensor_batch() -> list[dict]:
+    """Load machine data to send as a batch payload in demo requests."""
+    with open(SENSOR_DATA_PATH, "r") as f:
+        data = json.load(f)
+    return data.get("machines", [])
+
+
 # =============================================================================
 # Tool Function: check_thresholds
 # This is already implemented — agents can call this to get threshold analysis
@@ -301,10 +308,14 @@ def main():
     print(f"✅ Created: {anomaly_agent.agent.name} (version {anomaly_agent.agent.version})")
 
     print("\nAnalyzing all machines...")
+    machine_batch = _load_sensor_batch()
+    machine_ids = [machine["machine_id"] for machine in machine_batch]
     anomaly_result = anomaly_agent.run(
-        "Check all 5 machines (MX-001, EX-002, CP-003, CU-004, IS-005) "
-        "and report which ones have anomalies. For each anomaly, state the "
-        "sensor, its current value, the threshold it violates, and by how much."
+        "You are receiving a batch payload of machines that must be processed in one run. "
+        "Use check_thresholds for each machine_id in the payload and return the anomaly summary.\n\n"
+        f"BATCH_MACHINE_IDS: {json.dumps(machine_ids)}\n"
+        "BATCH_MACHINE_DATA:\n"
+        f"{json.dumps(machine_batch, indent=2)}"
     )
     print(anomaly_result)
 
@@ -316,13 +327,12 @@ def main():
     print(f"✅ Created: {diagnosis_agent.agent.name} (version {diagnosis_agent.agent.version})")
 
     print("\nDiagnosing critical machine: curing_press...")
+    critical_batch = [machine for machine in machine_batch if machine["status"] in {"critical", "warning"}]
     diagnosis_result = diagnosis_agent.run(
-        "The curing press (CP-003) has these anomalies:\n"
-        "- Temperature: 198.5°C (max threshold: 180°C) — 10.3% over\n"
-        "- Pressure: 18.2 bar (max threshold: 16.0 bar) — 13.8% over\n"
-        "- Vibration: 7.3 mm/s (max threshold: 3.0 mm/s) — 143% over\n\n"
-        "Last maintenance was 2026-03-20 (almost 2 months ago).\n"
-        "Diagnose the fault and recommend an action."
+        "Diagnose the following critical-machine batch and provide root cause, "
+        "maintenance actions, and urgency for each entry.\n\n"
+        "CRITICAL_MACHINE_BATCH:\n"
+        f"{json.dumps(critical_batch, indent=2)}"
     )
     print(diagnosis_result)
 

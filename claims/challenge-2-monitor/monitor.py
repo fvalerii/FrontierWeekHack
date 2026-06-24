@@ -72,13 +72,21 @@ def run_traced_agent_call():
         agent_name="tracing-test-agent",
         definition=PromptAgentDefinition(
             model=MODEL_DEPLOYMENT_NAME,
-            instructions="You are an insurance claims processing assistant. Respond briefly.",
+            instructions=(
+                "You are a claims operations assistant for ClaimSight Insurance. "
+                "Summarize triage risk and recommended decisions for claim batches."
+            ),
         ),
     )
 
     conversation = openai_client.conversations.create()
     response = openai_client.responses.create(
-        input="What are the top 3 red flags to watch for in auto collision claims?",
+        input=(
+            "Assess this claim batch and return decision urgency guidance.\n"
+            "domain: ClaimSight Insurance\n"
+            "claims: CLM-001 INVESTIGATE IMMEDIATE, CLM-003 REQUEST DOCUMENTS WITHIN 48H, CLM-005 INVESTIGATE STANDARD\n"
+            "tool_reference: assess_claim"
+        ),
         conversation=conversation.id,
         extra_body={"agent_reference": {"name": agent.name, "type": "agent_reference"}},
     )
