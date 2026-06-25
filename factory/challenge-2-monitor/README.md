@@ -73,8 +73,8 @@ Once the script finishes, your traces are live. Explore them in the Azure Portal
 
 ### Step 1: Microsoft Foundry Portal
 
-1. Go to [foundry.microsoft.com](https://ai.azure.com/nextgen) → open your project
-2. Click on the `fault-diagnosis-agent` -> **Traces** 
+1. Go to [Microsoft Foundry Portal](https://ai.azure.com/nextgen) → open your project
+2. Click on the `anomaly-detection-agent` -> **Traces** 
 
    - **Traces panel** — The **Conversations** tab lists every agent run as a row, showing the conversation ID, trace ID, response ID, status, creation time, duration, tokens in/out, estimated cost, evaluation results, and agent version. Use the search box and the **Status**, **Duration**, **Tokens**, and **Estimated Cost** filters (plus the date-range selector) to narrow results, switch to the **Responses** tab for individual model responses, or click **Create dataset** to turn these traces into an evaluation dataset.
 
@@ -90,7 +90,7 @@ Once the script finishes, your traces are live. Explore them in the Azure Portal
    - **Token usage** and **latency** per span
    - The full model prompt and completion if `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`
 5. Use the **timeline view** to spot slow spans, and the **details panel** to inspect individual messages
-6. Click on the `fault-diagnosis-agent` -> **Monitor** 
+6. Click on the `anomaly-detection-agent` -> **Monitor** 
 
    - **Monitor panel** — The **Overview** tab gives an at-a-glance health summary with cards for **Operational metrics** (estimated cost and total token usage), **Evaluations**, **Scheduled evaluations**, and **Scheduled red teaming run issues**. Below, the **Operational metrics** charts plot **Agent runs** (how often the agent was called) and **Runs and token metrics** (calls vs. tokens consumed) over the selected time range. Use the **Tools** tab, date filters, **Settings**, or **Open in Azure Monitor** for deeper analysis.
 
@@ -106,7 +106,7 @@ Once the script finishes, your traces are live. Explore them in the Azure Portal
 3. Set the time range to **Last 30 minutes** and click **Search** — you'll see individual trace events
 4. Look for traces where your agents were invoked.
    You can inspect the timestamp, operation ID, and message payload to confirm calls reached the model.
-5. Click on `Fault Diagnosis Agent` instance.
+5. Click on `Anomaly Detection Agent` instance.
 You will see the **end-to-end transaction trace** showing:
    - The full agent conversation (user input with sensor anomalies → agent response with diagnosis)
    - Nested spans for each model call with latency breakdowns (e.g., `gpt-5.4-2026-03-05` taking 5.1 seconds)

@@ -74,19 +74,25 @@ From the **claims** folder, run the deploy script:
 bash challenge-0-setup/deploy.sh
 ```
 
-This will provision all resources **and** automatically write your `.env` file to the repository root as `.env`.
+This will provision all resources **and** automatically write your `.env` file to the repository root as `.env`. The deployment will take a couple of minutes to complete.
 
 ## Verify the creation of your resources
 
-Go to the [Azure Portal](https://portal.azure.com/) and find your resource group, which should now contain resources like this (exact names will differ depending on scenario):
+Go to the [Azure Portal](https://portal.azure.com/) and find your resource group, which should now contain resources like this:
 
 ![Azure Portal Resources](./images/azure-portal-resources.png)
 
-Go to the [Microsoft Foundry Portal](https://ai.azure.com) and verify that you can access the Foundry project.
+> [!NOTE]
+> The resource name prefixes vary by scenario and the suffixes are unique for each deployment
+
+Go to the [Microsoft Foundry Portal](https://ai.azure.com/nextgen) and verify that you can access the Foundry project.
 
 ![Foundry Project](./images/foundry-project.png)
 
 Select **Build** in the top navigation, then **Models**, and verify that the **gpt-5.4** model is deployed.
+
+>[!NOTE]
+> In some versions of the Foundry Portal the **Models** tab is rebranded to **Deployments** but they serve the same purpose.
 
 ![Foundry Model](./images/foundry-model.png)
 

@@ -73,7 +73,7 @@ Once the script finishes, your traces are live. Explore them in the Azure Portal
 
 ### Step 1: Microsoft Foundry Portal
 
-1. Go to [foundry.microsoft.com](https://ai.azure.com/nextgen) → open your project
+1. Go to [Microsoft Foundry Portal](https://ai.azure.com/nextgen) → open your project
 2. Click on the `resolution-advisor-agent` -> **Traces** 
 
    - **Traces panel** — The **Conversations** tab lists every agent run as a row, showing the conversation ID, trace ID, response ID, status, creation time, duration, tokens in/out, estimated cost, evaluation results, and agent version. Use the search box and the **Status**, **Duration**, **Tokens**, and **Estimated Cost** filters (plus the date-range selector) to narrow results, switch to the **Responses** tab for individual model responses, or click **Create dataset** to turn these traces into an evaluation dataset.
