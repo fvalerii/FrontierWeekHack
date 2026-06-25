@@ -86,21 +86,42 @@ TIREFORGE FACTORY HEALTH REPORT
 
 1. Open the [Microsoft Foundry portal](https://ai.azure.com/nextgen)
 2. Select your project
-3. Top bar → **Build** → **Agents**
+3. Select **Build** → **Agents** in the top bar
 4. Confirm both agents appear:
    - `anomaly-detection-agent`
    - `fault-diagnosis-agent`
 
+
 ### Step 4: Build the workflow in the portal designer
 
-1. Left sidebar → **Build** → **Workflows** → **+ New workflow**
-2. In the visual designer:
-   - **+ Add step** → Agent → `anomaly-detection-agent`
-     - Input: `Run a full factory health check on all machines: MX-001, EX-002, CP-003, CU-004, IS-005.`
-   - **+ Add step** → Agent → `fault-diagnosis-agent`
-     - Wire the output of the first step as input to this step
-3. Name it `factory-health-workflow`
-4. Click **Save** then **Deploy**
+1. Select **Build** → **Agents** → **Workflows**
+2. Notice that the workflow created using the SDK in Part 1 is listed. Let's create a new workflow by selecting **Create** → **Blank workflow**
+
+![Create workflow](./images/create-workflow.png)
+
+3. In the visual designer **Add a workflow node** dialog choose **Agent**
+
+   ![add agent](./images/add-agent.png)
+
+4. In the **Select an agent** picker select `anomaly-detection-agent`
+
+   ![select agent](./images/select-agent.png)
+
+5. In the **Next node** picker select **Agent** and click **Done** button
+   \
+    ![next node agent](./images/next-node-agent.png)
+
+6. Select the new agent node in the canvas and in the **Select and agent** picker select `fault-diagnosis-agent`
+
+   ![select agent 2](./images/select-agent-2.png) 
+
+7. In the **Next node** picker select **End** and click **Done** button
+
+    ![end node](./images/end-node.png) 
+
+8. Select **Save** and name it `factory-health-workflow-portal`
+
+![Save agent](./images/save-agent.png) 
 
 ### Step 5: Test the workflow in the portal playground
 
@@ -112,7 +133,10 @@ TIREFORGE FACTORY HEALTH REPORT
 > never arrives. Paste the sensor readings directly into your message so the agents
 > can work without needing the tool.
 
-1. Open **factory-health-workflow** → **Playground**
+1. In the **factory-health-workflow-portal** workflow canvas select **Preview**
+
+![Preview Agent](./images/preview-agent.png) 
+
 2. Paste the following message (data is pre-embedded so no tool calls are needed):
 
    ```
@@ -154,45 +178,15 @@ TIREFORGE FACTORY HEALTH REPORT
 3. Watch the steps execute in sequence — anomaly scan first, then fault diagnosis
 4. Review the final consolidated report
 
-### Step 6: Invoke the portal workflow from Python (streaming)
 
-Add to your `.env`:
-```
-WORKFLOW_AGENT_NAME=factory-health-workflow
-```
+### Step 6: View run history and traces
 
-Re-run the script — Part B activates automatically:
-```bash
-python deploy.py
-```
+1. In the **factory-health-workflow-portal** workflow click **Traces** 
 
-You will see the workflow run submitted and polled live in the terminal:
-```
-============================================================
-INVOKING WORKFLOW (BACKGROUND POLL)
-============================================================
+![Workflow Traces](./images/workflow-traces.png) 
 
-=== Portal Workflow: factory-health-workflow ===
-
-  Workflow steps:
-    1. anomaly-detection-agent  — detect sensor anomalies across all machines
-    2. fault-diagnosis-agent    — diagnose root cause for anomalous machines
-
-  Submitting workflow run (background)...
-  Response ID : resp_xxxxxxxx
-  Initial status: queued
-  [1] status=in_progress  tokens=0
-  [2] status=completed  tokens=1842
-
-Workflow output:
-<final consolidated report streamed here>
-```
-
-### Step 7: View run history and traces
-
-1. Portal → your workflow → **Run history** tab
 2. Click the latest run to see the execution timeline — each step, duration, and output
-3. Left sidebar → **Operate** → **Tracing** to see the full distributed trace across both agent conversations
+
 
 ---
 
@@ -201,7 +195,6 @@ Workflow output:
 - [ ] Python workflow runs end-to-end: anomaly scan → diagnosis → factory health report
 - [ ] Both agents visible in the Foundry portal as persistent assets
 - [ ] Visual workflow created in the portal and tested in its playground
-- [ ] Portal workflow invoked from Python with live step streaming
 
 ---
 

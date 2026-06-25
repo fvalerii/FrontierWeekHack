@@ -90,21 +90,42 @@ NOVATEL CALL CENTER — SHIFT REPORT
 
 1. Open the [Microsoft Foundry portal](https://ai.azure.com/nextgen)
 2. Select your project
-3. Top bar → **Build** → **Agents**
+3. Select **Build** → **Agents** in the top bar
 4. Confirm both agents appear:
    - `intent-classification-agent`
    - `resolution-advisor-agent`
 
+
 ### Step 4: Build the workflow in the portal designer
 
-1. Left sidebar → **Build** → **Workflows** → **+ New workflow**
-2. In the visual designer:
-   - **+ Add step** → Agent → `intent-classification-agent`
-     - Input: `Classify all incoming calls and identify any critical or high-priority items.`
-   - **+ Add step** → Agent → `resolution-advisor-agent`
-     - Wire the output of the first step as input to this step
-3. Name it `callcenter-triage-workflow`
-4. Click **Save** then **Deploy**
+1. Select **Build** → **Agents** → **Workflows**
+2. Notice that the workflow created using the SDK in Part 1 is listed. Let's create a new workflow by selecting **Create** → **Blank workflow**
+
+![Create workflow](./images/create-workflow.png)
+
+3. In the visual designer **Add a workflow node** dialog choose **Agent**
+
+   ![add agent](./images/add-agent.png)
+
+4. In the **Select an agent** picker select `intent-classification-agent`
+
+   ![select agent](./images/select-agent.png)
+
+5. In the **Next node** picker select **Agent** and click **Done** button
+   \
+    ![next node agent](./images/next-node-agent.png)
+
+6. Select the new agent node in the canvas and in the **Select and agent** picker select `resolution-advisor-agent`
+
+   ![select agent 2](./images/select-agent-2.png) 
+
+7. In the **Next node** picker select **End** and click **Done** button
+
+    ![end node](./images/end-node.png) 
+
+8. Select **Save** and name it `callcenter-triage-workflow-portal`
+
+![Save agent](./images/save-agent.png) 
 
 ### Step 5: Test the workflow in the portal playground
 
@@ -116,7 +137,10 @@ NOVATEL CALL CENTER — SHIFT REPORT
 > never arrives. Paste the call data directly into your message so the agents can
 > work without needing the tool.
 
-1. Open **callcenter-triage-workflow** → **Playground**
+1. Open **callcenter-triage-workflow-portal** → **Preview**
+
+![Preview Agent](./images/preview-agent.png) 
+
 2. Paste the following message (data is pre-embedded so no tool calls are needed):
 
    ```
@@ -150,45 +174,13 @@ NOVATEL CALL CENTER — SHIFT REPORT
 3. Watch the steps execute in sequence — classification first, then resolution advisory
 4. Review the final consolidated report
 
-### Step 6: Invoke the portal workflow from Python (streaming)
+### Step 6: View run history and traces
 
-Add to your `.env`:
-```
-WORKFLOW_AGENT_NAME=callcenter-triage-workflow
-```
+1. In the **callcenter-triage-workflow-portal** workflow click **Traces**
 
-Re-run the script — Part B activates automatically:
-```bash
-python deploy.py
-```
+![Workflow Traces](./images/workflow-traces.png) 
 
-You will see the workflow run submitted and polled live in the terminal:
-```
-============================================================
-INVOKING WORKFLOW (BACKGROUND POLL)
-============================================================
-
-=== Portal Workflow: callcenter-triage-workflow ===
-
-  Workflow steps:
-    1. intent-classification-agent  — classify all calls by intent, priority, sentiment
-    2. resolution-advisor-agent     — recommend resolution for high-priority calls
-
-  Submitting workflow run (background)...
-  Response ID : resp_xxxxxxxx
-  Initial status: queued
-  [1] status=in_progress  tokens=0
-  [2] status=completed  tokens=1842
-
-Workflow output:
-<final consolidated report streamed here>
-```
-
-### Step 7: View run history and traces
-
-1. Portal → your workflow → **Run history** tab
 2. Click the latest run to see the execution timeline — each step, duration, and output
-3. Left sidebar → **Operate** → **Tracing** to see the full distributed trace across both agent conversations
 
 ---
 
@@ -197,7 +189,6 @@ Workflow output:
 - [ ] Python workflow runs end-to-end: classification → resolution → shift report
 - [ ] Both agents visible in the Foundry portal as persistent assets
 - [ ] Visual workflow created in the portal and tested in its playground
-- [ ] Portal workflow invoked from Python with live step streaming
 
 ---
 
