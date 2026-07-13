@@ -1,11 +1,10 @@
-<img width="4400" height="687" alt="banner" src="https://github.com/user-attachments/assets/132d5b26-c9d0-404f-b137-4ab3a5d12289" />
+<img width="990" height="150" alt="Microsoft Agent-a-thon_banner_WEB_990x150" src="https://github.com/user-attachments/assets/5f550061-077d-421c-bba2-4a5820e72fad" />
 
-# Build and Scale AI Agents with Azure Hackathon
+# Build and Scale AI Agents with Microsoft Foundry
+## The Level 3: Architect learning path 
+ 
+Welcome to the hands-on lab experience where ideas turn into real, enterprise-ready solutions. This is the most advanced of the three agent-building learning paths. Where the Explorer path builds your first no-code agent and the Maker path automates work with low-code tools, this path is for developers, engineers, and architects who want complete control over models, orchestration, and operations.
 
-Welcome to the hands-on lab experience of the Microsoft Cloud & AI Frontier Week Hackathon — where ideas turn into real solutions.
- 
-Throughout Frontier Week, you’ve explored how AI is transforming organizations. This is where you put that into practice.
- 
 In this lab, you’ll build, monitor, evaluate, and orchestrate AI agents using the Microsoft Foundry SDK. You’ll follow a guided, scenario-based experience designed to help you move from concept to a working, enterprise-ready multi-agent system.
  
 By the end, you won’t just understand how agents work — you’ll have built one you can trace, evaluate, and deploy.
@@ -53,13 +52,16 @@ All scenarios follow the same 5-challenge structure:
 
 ## Ready to Expand Your Knowledge?
 
-### We are on Tour! 
+### 1. Put Your Skills to the Test at the Microsoft Agent-a-Thon!
+You’ve built production-grade agents — now bring them to a live, hands-on build experience. The Microsoft Agent-a-Thon is where you apply everything from this path, get real-time support as you build, and compete for recognition and prizes. Register at [Microsoft Agent-a-Thon](https://www.microsoft.com/en-us/events/local-events/microsoft-agent-a-thon).
+
+### 2. Join the Tour! 
 
 <img width="4400" height="687" alt="banner" src="agentichacks.jpg" />
 
-Take your Frontier Week momentum even further with a high-energy, in-person experience. Spend a full day exploring advanced use cases, hands-on builds, and expert-led sessions designed to turn ideas into real business impact. Find the event nearest you on [EMEA Agentic AI Hacks - Microsoft Pulse](https://pulse.microsoft.com/en/build-ai-hacks-agentic-ai/).
+Prefer to build alongside experts in the room? Spend a full day exploring advanced use cases, hands-on builds, and expert-led sessions designed to turn ideas into real business impact. Find the event nearest you on [EMEA Agentic AI Hacks - Microsoft Pulse](https://pulse.microsoft.com/en/build-ai-hacks-agentic-ai/).
 
-### Go deeper with the docs
+### 3. Go deeper with the docs
 
 - [What is Microsoft Foundry?](https://learn.microsoft.com/azure/foundry/what-is-foundry)
 - [Foundry Agent Service overview](https://learn.microsoft.com/azure/foundry/agents/overview)
@@ -67,7 +69,7 @@ Take your Frontier Week momentum even further with a high-energy, in-person expe
 - [Evaluate agentic workflows](https://learn.microsoft.com/azure/foundry/observability/how-to/evaluate-agent)
 - [azure-ai-projects SDK Reference](https://learn.microsoft.com/python/api/azure-ai-projects/)
 
-### Keep learning on Microsoft Learn
+### 4. Keep learning on Microsoft Learn
 
 - [Develop an AI agent with Microsoft Foundry Agent Service](https://learn.microsoft.com/training/modules/develop-ai-agent-azure/) — 55 min module
 - [Build agent-driven workflows using Microsoft Foundry](https://learn.microsoft.com/training/modules/build-agent-workflows-microsoft-foundry/) — 1 hr module
