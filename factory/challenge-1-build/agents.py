@@ -15,7 +15,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from azure.ai.projects import AIProjectClient
-from azure.ai.projects.models import FunctionTool, PromptAgentDefinition
+from azure.ai.projects.models import FunctionTool, PromptAgentDefinition, FileSearchTool
 from azure.identity import DefaultAzureCredential
 from openai.types.responses.response_input_param import FunctionCallOutput
 
@@ -48,7 +48,7 @@ def _load_sensor_batch() -> list[dict]:
 
 # =============================================================================
 # Tool Function: check_thresholds
-# This is already implemented — agents can call this to get threshold analysis
+# Agents can call this to get threshold analysis
 # =============================================================================
 
 def check_thresholds(machine_id: str) -> str:
@@ -128,7 +128,121 @@ CHECK_THRESHOLDS_TOOL = FunctionTool(
     },
     strict=False,
 )
+# =============================================================================
+# Upload Manual to Vector Store
+# =============================================================================
 
+def upload_manual_to_vector_store(self, file_path: str):
+        """Uploads a file to the project's vector store and returns the ID."""
+        # Ensure the client is initialized
+        if not self.client:
+            self.client = AIProjectClient(
+                endpoint=PROJECT_CONNECTION_STRING,
+                credential=DefaultAzureCredential(),
+            )
+        
+        # Upload the file
+        file = self.client.agents.upload_file(file_path=file_path)
+        print(f"✅ Uploaded manual: {file_path} (ID: {file.id})")
+        return file.id
+
+# =============================================================================
+# Tool Function: fetch_maintenance_history
+# =============================================================================
+
+def fetch_maintenance_history(machine_id: str) -> str:
+    """Queries the CMMS for past maintenance records of a machine."""
+    with open(REPO_ROOT / "factory" / "maintenance_history.json", "r") as f:
+        history = json.load(f)
+    
+    # Return history or a message if none exists
+    return json.dumps(history.get(machine_id, "No past maintenance history found."))
+
+# Tool definition for the agent (Foundry FunctionTool format)
+FETCH_HISTORY_TOOL = FunctionTool(
+    name="fetch_maintenance_history",
+    description="Retrieve the past maintenance history for a specific machine to inform diagnosis.",
+    parameters={
+        "type": "object",
+        "properties": {
+            "machine_id": {"type": "string", "description": "The machine ID"}
+        },
+        "required": ["machine_id"],
+    },
+)
+
+# =============================================================================
+# Tool Function: lookup_spare_parts
+# =============================================================================
+def lookup_spare_parts(part_number: str) -> str:
+    """Queries the ERP/Inventory system for spare part availability."""
+    inventory_file = REPO_ROOT / "factory" / "inventory.json"
+    
+    if not inventory_file.exists():
+        return json.dumps({"error": "Inventory database unavailable."})
+        
+    with open(inventory_file, "r") as f:
+        inventory = json.load(f)
+    
+    # Strip any potential '#' symbol the agent might pass
+    clean_part_number = part_number.replace("#", "").strip()
+    
+    part_info = inventory.get(clean_part_number)
+    
+    if part_info:
+        return json.dumps(part_info)
+    else:
+        return json.dumps({"status": "UNKNOWN_PART", "message": f"Part {clean_part_number} not found in inventory system."})
+
+LOOKUP_PARTS_TOOL = FunctionTool(
+    name="lookup_spare_parts",
+    description="Check the inventory availability of a specific spare part. Requires the exact part number (e.g., TF-101).",
+    parameters={
+        "type": "object",
+        "properties": {
+            "part_number": {"type": "string", "description": "The exact part number to look up"}
+        },
+        "required": ["part_number"],
+        "additionalProperties": False,
+    },
+    strict=False,
+)
+
+# =============================================================================
+# Tool Function: create_work_order
+# =============================================================================
+def create_work_order(machine_id: str, action: str, urgency: str) -> str:
+    """Creates a maintenance work order in the CMMS after approval."""
+    work_order_file = REPO_ROOT / "factory" / "work_orders.json"
+    
+    # Create an ID for the work order
+    import random
+    wo_id = f"WO-{random.randint(10000, 99999)}"
+    
+    order_data = {
+        "work_order_id": wo_id,
+        "machine_id": machine_id,
+        "required_action": action,
+        "urgency": urgency,
+        "status": "OPEN",
+        "created_at": "2026-07-15"
+    }
+    
+    # Load existing or start fresh
+    orders = []
+    if work_order_file.exists():
+        with open(work_order_file, "r") as f:
+            try:
+                orders = json.load(f)
+            except json.JSONDecodeError:
+                pass
+                
+    orders.append(order_data)
+    
+    with open(work_order_file, "w") as f:
+        json.dump(orders, f, indent=2)
+        
+    return json.dumps({"status": "SUCCESS", "work_order_id": wo_id, "message": f"Work order {wo_id} created successfully."})
 
 # =============================================================================
 # Anomaly Detection Agent
@@ -241,20 +355,29 @@ class FaultDiagnosisAgent:
         )
         self.openai = self.client.get_openai_client()
 
+        manual_path = REPO_ROOT / "factory" / "TireForge_Manual_V2.md"
+        file_id  = upload_manual_to_vector_store(str(manual_path))
+
+        rag_tool = FileSearchTool(file_search={"file_ids": [file_id]})
+
         system_prompt = """
         You are a mechanical fault diagnosis expert for TireForge Industries.
         Given a list of sensor anomalies from a machine, your job is to:
-        1. Identify the most likely root cause based on the pattern of anomalies:
-           - High temperature + high pressure → likely blockage or restricted flow
-           - High vibration alone → likely bearing wear, misalignment, or imbalance
-           - High temperature + high vibration → likely bearing failure or lubrication issue
-           - Multiple sensors critical → compound failure, escalate immediately
-        2. Recommend specific, actionable maintenance steps.
-        3. Estimate urgency: IMMEDIATE (stop now), WITHIN 24H, or MONITOR.
-        Be concise. Format your response as:
+        1. ALWAYS check the maintenance history using the fetch_maintenance_history tool.
+        2. Use the File Search tool to ground your answers in official procedures and identify required part numbers.
+        3. ALWAYS check inventory for any required parts using the lookup_spare_parts tool.
+        4. Identify the most likely root cause.
+        5. Recommend specific maintenance steps. If a part is out of stock, suggest an interim workaround or note the delay.
+        6. Estimate urgency: IMMEDIATE (stop now), WITHIN 24H, or MONITOR.
+        
+        CRITICAL RULE: If the urgency is IMMEDIATE, you must end your response with the exact phrase: "REQUIRES_APPROVAL: YES". Otherwise, end with "REQUIRES_APPROVAL: NO".
+        
+        Format your response as:
         LIKELY CAUSE: ...
         MAINTENANCE ACTIONS: ...
+        PART AVAILABILITY: ...
         URGENCY: ...
+        REQUIRES_APPROVAL: ...
         """
 
         self.agent = self.client.agents.create_version(
@@ -262,13 +385,14 @@ class FaultDiagnosisAgent:
             definition=PromptAgentDefinition(
                 model=MODEL_DEPLOYMENT_NAME,
                 instructions=system_prompt,
+                tools=[rag_tool, FETCH_HISTORY_TOOL, LOOKUP_PARTS_TOOL],
             ),
         )
 
         return self.agent
 
     def run(self, input_text: str) -> str:
-        """Run the fault diagnosis agent with the given input."""
+        """Run the fault diagnosis agent, handling tool calls (RAG/Function) if needed."""
         conversation = self.openai.conversations.create()
 
         response = self.openai.responses.create(
@@ -276,6 +400,38 @@ class FaultDiagnosisAgent:
             conversation=conversation.id,
             extra_body={"agent_reference": {"name": self.agent.name, "type": "agent_reference"}},
         )
+        # Handle function /tool call loops
+        while True:
+            # Check if the agent wants to call a tool
+            function_calls =[item for item in response_output if item.type == "function_call"]
+            if not function_calls:
+                break
+            
+            input_list = []
+            for item in function_calls:
+                # if the tool is file_search, use the file_search tool to search the files
+                if item.name == "fetch_maintenance_history":
+                    args = json.loads(item.arguments)
+                    result = check_thresholds(args["machine_id"])
+                elif item.name == "lookup_spare_parts":
+                    args = json.loads(item.arguments)
+                    result = lookup_spare_parts(args["part_number"])
+                else:
+                    result = json.dumps({"status": "Tool handled by agent service"})
+
+                input_list.append(
+                    FunctionCallOutput(
+                        type="function_call_output",
+                        call_id=item.call_id,
+                        output=result,
+                    )
+                )
+
+            response = self.openai.responses.create(
+                input=input_list,
+                conversation=conversation.id,
+                extra_body={"agent_reference": {"name": self.agent.name, "type": "agent_reference"}},
+            )
 
         self.openai.conversations.delete(conversation_id=conversation.id)
         return response.output_text
@@ -328,13 +484,39 @@ def main():
 
     print("\nDiagnosing critical machine: curing_press...")
     critical_batch = [machine for machine in machine_batch if machine["status"] in {"critical", "warning"}]
+    
     diagnosis_result = diagnosis_agent.run(
         "Diagnose the following critical-machine batch and provide root cause, "
         "maintenance actions, and urgency for each entry.\n\n"
         "CRITICAL_MACHINE_BATCH:\n"
         f"{json.dumps(critical_batch, indent=2)}"
     )
+    print("\n=== DIAGNOSIS REPORT ===")
     print(diagnosis_result)
+    print("========================\n")
+
+    # --- HUMAN IN THE LOOP LOGIC ---
+    if "REQUIRES_APPROVAL: YES" in diagnosis_result:
+        print("⚠️ CRITICAL ACTION DETECTED. Human approval required to proceed with Work Order.")
+        user_input = input("Approve this maintenance action? (y/n): ")
+        
+        if user_input.lower().strip() == 'y':
+            print("Processing approval...")
+            # For this demo, we extract the action text or pass the critical batch machine info
+            for machine in critical_batch:
+                if machine["status"] == "critical":
+                    # Call the tool to create a record in your local work_orders.json
+                    wo_result = create_work_order(
+                        machine_id=machine["machine_id"],
+                        action="Execute diagnostic maintenance based on AI manual recommendation",
+                        urgency="IMMEDIATE"
+                    )
+                    print(f"✅ Tool Output: {wo_result}")
+        else:
+            print("❌ Action Rejected. Escalating to shift supervisor.")
+    else:
+        print("ℹ️ No immediate action required. Logging to maintenance queue.")
+        
 
     # Cleanup — comment out to keep agents visible in the Foundry portal
     # print("\nCleaning up agents...")
