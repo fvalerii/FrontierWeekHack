@@ -1,3 +1,7 @@
+> ⚠️ **Note:** This repository contains the raw, time-boxed code submitted during the [Microsoft Cloud & AI Frontier Week Hackathon]. 
+> 
+> I have since refactored, polished, and expanded this system into a production-ready MLOps architecture. **Please view the finalized project here: [https://github.com/fvalerii/azure-predictive-maintenance-agents]**
+
 <img width="990" height="150" alt="Microsoft Agent-a-thon_banner_WEB_990x150" src="https://github.com/user-attachments/assets/5f550061-077d-421c-bba2-4a5820e72fad" />
 
 # Build and Scale AI Agents with Microsoft Foundry
